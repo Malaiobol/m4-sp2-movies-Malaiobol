@@ -1,11 +1,12 @@
 import express, { Application } from "express";
+import { startDatabase } from "./database";
 
 const app: Application = express();
 app.use(express.json());
 
 const PORT: number = 3000;
 const runningMsg: string = `Server is running on ${PORT}!`; 
-app.listen(PORT, ()=>{
-    
+app.listen(PORT, async()=>{
+    await startDatabase();
     console.log(runningMsg);
 });
