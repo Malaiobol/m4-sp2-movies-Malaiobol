@@ -15,7 +15,7 @@ const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
     `
     const queryResult = await client.query(query);
     
-    return resp.status(201).json(queryResult);
+    return resp.status(201).json(queryResult.rows);
 };
 
 const updateMovie = async (req: Request, resp: Response): Promise<Response> =>{
