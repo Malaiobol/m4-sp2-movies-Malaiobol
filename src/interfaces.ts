@@ -1,3 +1,5 @@
+import { QueryResult } from "pg";
+
 interface ImovieRequest{
     name: string,
     description: string,
@@ -9,4 +11,6 @@ interface Imovie extends ImovieRequest{
     id: number
 }
 
-export { ImovieRequest, Imovie };
+type movieResult =  QueryResult<Imovie>;
+
+export { ImovieRequest, Imovie, movieResult };

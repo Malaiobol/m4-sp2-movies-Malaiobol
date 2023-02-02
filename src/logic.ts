@@ -1,8 +1,25 @@
 import { Request, Response } from "express";
+import { QueryConfig } from "pg";
 import { client } from "./database";
+import { ImovieRequest, movieResult } from "./interfaces";
 
 const createMovie = async (req: Request, resp: Response): Promise<Response> =>{
-    return resp.status(201).json(req)
+
+    const MovieRequest: ImovieRequest = req.body;
+    const queryString: string = `
+    INSERT INTO
+        movies_list(name, description, duration, price)
+    VALUES
+        ($1, $2, $3, $4)
+    RETURNING *;
+    `;
+
+    const queryConfig: QueryConfig ={
+        text: queryString,
+        values: Object.values(MovieRequest)
+    };
+    const queryResult: movieResult = await client.query(queryConfig);
+    return resp.status(201).json();
 };
 
 const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
@@ -13,7 +30,7 @@ const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
         FROM
             movies_list;
     `
-    const queryResult = await client.query(query);
+    const queryResult: movieResult = await client.query(query);
     
     return resp.status(201).json(queryResult.rows);
 };
