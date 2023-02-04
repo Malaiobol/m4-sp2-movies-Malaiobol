@@ -1,45 +1,78 @@
 import { Request, Response } from "express";
+import format from "pg-format";
 import { QueryConfig } from "pg";
 import { client } from "./database";
-import { ImovieRequest, movieResult } from "./interfaces";
+import { Imovie, ImovieRequest, movieResult } from "./interfaces";
 
 const createMovie = async (req: Request, resp: Response): Promise<Response> =>{
 
-    const MovieRequest: ImovieRequest = req.body;
-    const queryString: string = `
-    INSERT INTO
-        movies_list(name, description, duration, price)
-    VALUES
-        ($1, $2, $3, $4)
-    RETURNING *;
-    `;
+    const movieRequest: ImovieRequest = req.body;
+    const queryString: string = format(`
+        INSERT INTO
+            movies_list(%I)
+        VALUES
+            (%L)
+        RETURNING *;
+        `,
+        Object.keys(movieRequest),
+        Object.values(movieRequest)
+    );
 
-    const queryConfig: QueryConfig ={
-        text: queryString,
-        values: Object.values(MovieRequest)
-    };
-    const queryResult: movieResult = await client.query(queryConfig);
-    return resp.status(201).json();
+    const queryResult: movieResult = await client.query(queryString);
+    const newMovie: Imovie = queryResult.rows[0];
+    return resp.status(201).json(newMovie);
 };
 
 const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
 
-    const query: string = `
+    const perPage: any = req.query.per_page === undefined ? 5 : req.query.per_page;
+    let page: any = req.query.page === undefined ? 0 : req.query.page;
+    page = page * perPage;
+
+    const queryString: string = `
         SELECT
             *
         FROM
-            movies_list;
+            movies_list
+        LIMIT $1 OFFSET $2;
     `
-    const queryResult: movieResult = await client.query(query);
-    
+
+    const queryConfig: QueryConfig ={
+        text: queryString,
+        values: [perPage, page],
+    }
+
+    const queryResult: movieResult = await client.query(queryConfig);
     return resp.status(201).json(queryResult.rows);
 };
 
 const updateMovie = async (req: Request, resp: Response): Promise<Response> =>{
+
+    const movieRequest: ImovieRequest = req.body;
+    const movieID: number = +req.params.id;
+
     return resp.status(201).json();
 };
 
 const deleteMovie = async (req: Request, resp: Response): Promise<Response> =>{
+
+    const movieID: number = +req.params.id;
+    const queryString: string = `
+        DELETE FROM
+            movies_list
+        WHERE
+            id = $1;
+    `   
+    const queryConfig: QueryConfig = {
+        text: queryString,
+        values: [movieID]
+    };
+    const queryResult: movieResult = await client.query(queryConfig);
+    if(!queryResult.rowCount){
+        return resp.status(404).json({
+            message: "Movie not found"
+        })
+    };
     return resp.status(204);
 };
 

@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.post("/movie", createMovie);
 app.get("/movie", listMovies);
-app.patch("/movie", updateMovie);
+app.patch("/movie:id", updateMovie);
 app.delete("/movie", deleteMovie);
 
 const PORT: number = 3000;
