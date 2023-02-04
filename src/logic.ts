@@ -48,10 +48,33 @@ const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
 
 const updateMovie = async (req: Request, resp: Response): Promise<Response> =>{
 
-    const movieRequest: ImovieRequest = req.body;
+    if(req.body.id){
+        delete req.body["id"]
+    };
+
+    const updateData = Object.values(req.body);
+    const updateKeys = Object.keys(req.body);
     const movieID: number = +req.params.id;
 
-    return resp.status(201).json();
+    const formatString: string = format(`
+        UPDATE
+            movies_list
+        SET(%I) = ROW(%L)
+        WHERE
+            id = $1
+        RETURNING *;
+    `,
+        updateKeys,
+        updateData
+    )
+
+    const queryConfig: QueryConfig ={
+        text: formatString,
+        values: [movieID]
+    }
+
+    const queryResult: movieResult = await client.query(queryConfig);
+    return resp.status(201).json(queryResult.rows[0]); 
 };
 
 const deleteMovie = async (req: Request, resp: Response): Promise<Response> =>{
@@ -67,12 +90,8 @@ const deleteMovie = async (req: Request, resp: Response): Promise<Response> =>{
         text: queryString,
         values: [movieID]
     };
+
     const queryResult: movieResult = await client.query(queryConfig);
-    if(!queryResult.rowCount){
-        return resp.status(404).json({
-            message: "Movie not found"
-        })
-    };
     return resp.status(204);
 };
 
