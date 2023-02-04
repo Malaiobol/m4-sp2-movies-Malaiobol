@@ -1,14 +1,14 @@
 import express, { Application } from "express";
 import { startDatabase } from "./database";
 import { createMovie, deleteMovie, listMovies, updateMovie } from "./logic";
-import { ensureMovieExists, validateMovie } from "./middlewares";
+import { ensureMovieExists, validateMovie, validateName } from "./middlewares";
 
 const app: Application = express();
 app.use(express.json());
 
-app.post("/movie", validateMovie, createMovie);
+app.post("/movie", validateName, validateMovie, createMovie);
 app.get("/movie", listMovies);
-app.patch("/movie:id", ensureMovieExists, updateMovie);
+app.patch("/movie:id", ensureMovieExists, validateName, updateMovie);
 app.delete("/movie:id", ensureMovieExists, deleteMovie);
 
 const PORT: number = 3000;

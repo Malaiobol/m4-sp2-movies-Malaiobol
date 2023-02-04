@@ -24,9 +24,15 @@ const createMovie = async (req: Request, resp: Response): Promise<Response> =>{
 };
 
 const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
-
-    const perPage: any = req.query.per_page === undefined ? 5 : req.query.per_page;
-    let page: any = req.query.page === undefined ? 0 : req.query.page;
+        
+    let perPage: any = req.query.perPage === undefined || typeof(req.query.perPage) === "string" ? 5 : req.query.perPage;
+    let page: any = req.query.page === undefined || typeof(req.query.page) === "string" ? 0 : req.query.page;
+    if(perPage < 0){
+        perPage = 5
+    };
+    if(page < 0 ){
+        page = 0    
+    };
     page = page * perPage;
 
     const queryString: string = `
@@ -37,10 +43,10 @@ const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
         LIMIT $1 OFFSET $2;
     `
 
-    const queryConfig: QueryConfig ={
+    const queryConfig: QueryConfig = {
         text: queryString,
         values: [perPage, page],
-    }
+    };
 
     const queryResult: movieResult = await client.query(queryConfig);
     return resp.status(201).json(queryResult.rows);
@@ -71,7 +77,7 @@ const updateMovie = async (req: Request, resp: Response): Promise<Response> =>{
     const queryConfig: QueryConfig ={
         text: formatString,
         values: [movieID]
-    }
+    };
 
     const queryResult: movieResult = await client.query(queryConfig);
     return resp.status(201).json(queryResult.rows[0]); 
