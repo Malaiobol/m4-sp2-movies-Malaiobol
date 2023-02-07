@@ -25,12 +25,12 @@ const createMovie = async (req: Request, resp: Response): Promise<Response> =>{
 
 const listMovies = async (req: Request, resp: Response): Promise<Response> =>{
         
-    let perPage: any = req.query.perPage === undefined || typeof(req.query.perPage) === "string" ? 5 : req.query.perPage;
-    let page: any = req.query.page === undefined || typeof(req.query.page) === "string" ? 0 : req.query.page;
-    if(perPage < 0){
+    let perPage: any = req.query.perPage === undefined || typeof(req.query.perPage) !== "string" ? 5 : req.query.perPage;
+    let page: any = req.query.page === undefined || typeof(req.query.page) !== "string" ? 0 : req.query.page;
+    if(perPage <= 0){
         perPage = 5
     };
-    if(page < 0 ){
+    if(page <= 0 ){
         page = 0    
     };
     page = page * perPage;
